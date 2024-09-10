@@ -1,29 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
 //import ExpenseItem from './components/ExpenseItem';
-import Expenses from './components/Expenses';
-import NoName from './NoName';
+import Expenses from './components/Expense/Expenses';
+//import NoName from './NoName';
+import NewExpense from './components/NewExpense/NewExpense';
 
 //리엑트 진입점
 function App() {
   const expenses = [
     { id: 1, title: '냠냠치킨', price: 19000, date: new Date(2023, 6, 19) },
     { id: 2, title: '양파', price: 5000, date: new Date(2023, 6, 20) },
-    { id: 3, title: '포도', price: 20000, date: new Date(2023, 6, 21) },
-    { id: 4, title: '오렌지', price: 15000, date: new Date(2023, 6, 22) },
   ];
+
+  // 지출 객체 배열을 상태변수로 관리
+  const [expenseList, setExpenseList] = useState(expenses);
+
+  // ExpenseForm에게 내려보낼 함수
+  const addExpenseHandler = (newEx) => {
+    const modifyEx = {
+      ...newEx,
+      id: expenseList[expenseList.length - 1].id + 1,
+    };
+
+    setExpenseList([...expenseList, modifyEx]);
+    console.log(expenseList);
+    console.log('-----------------');
+
+    console.log(modifyEx);
+  };
 
   return (
     // React.Fragment 생략가능 -> <> 닫는 tag 반드시 있어야 함. </>
     <>
-      <Expenses expenses={expenses} />
-      <NoName>
-        <ul>
-          <li>사과</li>
-          <li>복숭아</li>
-          <li>포도</li>
-        </ul>
-      </NoName>
+      <NewExpense onAddExpense={addExpenseHandler} />
+      <Expenses expenses={expenseList} />
     </>
   );
 }

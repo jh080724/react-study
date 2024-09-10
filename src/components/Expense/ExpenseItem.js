@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import './ExpenseItem.css';
 import ExpenseDate from './ExpenseDate';
-import Card from './UI/Card';
+import Card from '../UI/Card';
 
 //전달되는 props는 객체로 온다. 디스트럭쳐링을 통해 쪼개 받을 수 있다.
 const ExpenseItem = ({ title, price, date }) => {
@@ -13,7 +13,7 @@ const ExpenseItem = ({ title, price, date }) => {
   // userState(상태 변수의 초기값) -> 배열을 리턴한다.
   // 첫뻔째 요소는 관리할 상태값
   // 두번째 요소는 상태값을 변경해주는 setter 함수가 리턴됨. (디스트럭쳐링으로 한번에 받음.)
-  const [itemTitle, setItemTitle] = useState();
+  const [itemTitle, setItemTitle] = useState(title);
 
   const clickHandler = () => {
     // 상태값의 변경은 반드시 setter로만 변경해야함.
@@ -33,7 +33,9 @@ const ExpenseItem = ({ title, price, date }) => {
       <button id='btn1' onClick={clickHandler}>
         수정
       </button>
-      <button id='btn2'>삭제</button>
+      <button id='btn2' onClick={() => alert('삭제버튼 클릭!')}>
+        삭제
+      </button>
     </Card>
   );
 };
