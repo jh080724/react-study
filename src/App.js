@@ -10,9 +10,9 @@ import ExpenseFilter from './components/Expense/ExpenseFilter';
 function App() {
   const expenses = [
     { id: 1, title: '냠냠치킨', price: 19000, date: new Date(2023, 6, 19) },
-    { id: 2, title: '양파', price: 5000, date: new Date(2023, 6, 20) },
-    { id: 3, title: '푸라닥치킨', price: 5000, date: new Date(2023, 6, 20) },
-    { id: 4, title: '버거킹', price: 5000, date: new Date(2021, 6, 20) },
+    { id: 2, title: '양파', price: 5000, date: new Date(2022, 5, 20) },
+    { id: 3, title: '도미노피자', price: 35000, date: new Date(2021, 2, 21) },
+    { id: 4, title: '마라탕후루', price: 18000, date: new Date(2024, 11, 13) },
   ];
 
   // 지출 객체 배열을 상태변수로 관리
