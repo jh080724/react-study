@@ -9,27 +9,48 @@ import ButtonComponent from '../../UI/Button';
    컴포넌트 내부 데이터를 사용하지 않고 상태에만 집중하기 때문에
    컴포넌트 바깥쪽에 선언하는 것이 일반적입니다.
    
-   param1 - state: 변경 전의 상태값(최신의 상태)
+   param1 - state: 변경 전의 상태값
    param2 - action: dispatch함수(상태 변경 등의 행동)가 전달한 상태 변경 객체
    return: 관리할 상태값들을 반환
  */
-const emailReducer = (state, action) => {
-  console.log('emailReducer Called');
+const formReducer = (state, action) => {
+  console.log('email reducer called!!');
   console.log('state: ', state);
   console.log('action: ', action);
 
-  if (action.type === 'USER_INPUT') {
-    return {
-      value: action.value,
-      isValid: action.val.includes('@'),
-    };
+  switch (action.type) {
+    case 'EMAIL_INPUT':
+      return {
+        ...state,
+        email: { ...state.email, value: action.val },
+      };
+    case 'PW_INPUT':
+      return {
+        ...state,
+        pw: { ...state.pw, value: action.val },
+      };
+    case 'VALIDATE_EMAIL':
+      return {
+        ...state,
+        email: { ...state.email, isValid: state.email.value.includes('@') },
+      };
+    case 'VALIDATE_PW':
+      return {
+        ...state,
+        pw: { ...state.pw, isValid: state.pw.value.trim().length > 6 },
+      };
+    case 'VALIDATE_FORM':
+      return {
+        ...state,
+        formIsValid: state.email.isValid && state.pw.isValid,
+      };
+
+    default:
+      return state;
   }
 };
 
 const Login = ({ onLogin }) => {
-  // 이메일 입력값을 저장
-  // const [enteredEmail, setEnteredEmail] = useState(''); --> 리듀서로 관리
-
   // email reducer 사용하기
   /*
      param1 - reducer function: 위에서 만든 리듀서 함수
@@ -37,103 +58,85 @@ const Login = ({ onLogin }) => {
      return1 - 이메일 관련 상태변수
      return2 - dispatch함수: 상태를 변경할 수 있는 함수
    */
-  const [emailState, dispatchEmail] = useReducer(emailReducer, {
-    value: '',
-    isValid: null,
+  const [formState, dispatchForm] = useReducer(formReducer, {
+    email: { value: '', isValid: null },
+    pw: { value: '', isValid: null },
+    formIsValid: false,
   });
 
-  // 패스워드 입력값을 저장
-  const [enteredPw, setEnteredPw] = useState('');
-
-  // 이메일 입력이 정상적인지 확인
-  // const [emailIsValid, setEmailIsValid] = useState(true); --> 리듀서로 관리
-
-  // 패스워드 입력도 정상적인지 확인
-  const [pwIsValid, setPwIsValid] = useState(true);
-
-  // 이메일, 패스워드 둘 다 동시에 정상적인지 확인.
-  const [formIsValid, setFormIsValid] = useState(false);
-
-  // 기존의 email 상태변수를 제거함.
-  // 상태값이 필요하다면-> reducer가 제공한 상태값을 활용
-  // 내가 지정한 상태값(예: emailState)에서 {isValid}" 프로퍼티를 디스트럭쳐링해서 사용.
-  const { isValid: emailIsValid } = emailState;
+  const { email: emailState, pw: pwState } = formState;
 
   useEffect(() => {
-    console.log(' Login.js에서 useEffect 호출됨');
-
-    // setTimeout 을 사용해서 유효성 검증을 1초 뒤에 실행하도록 작성.
-    // 1초 이내에 새로운 입력값이 들어 온다면? -> 상태 변경 -> userEffect가 다시 실행됨.
     const timer = setTimeout(() => {
-      console.log(' Login.js에서 setTimeout() 호출됨');
-      // setFormIsValid(enteredEmail.includes('@') && enteredPw.trim().length > 6);
-    }, 1000);
+      console.log('setTimeout 호출!');
+      dispatchForm({ type: 'VALIDATE_FORM' });
+    }, 500);
 
-    // cleanup 함수 - 컴포넌트가 업데이트 되거나, 없어지기 직전에 실행
-    // 사용자가 1초 이내에 추가입력 -> 상태변경(컴포넌트 업데이트) -> 위에 예약한 timer를 취소해라.
+    // cleanup 함수 - 컴포넌트가 업데이트 되거나 없어지기 직전에 실행.
+    // 사용자가 1초 이내에 추가 입력 -> 상태 변경(컴포넌트 업데이트) -> 위에 예약한 timer를 취소해라.
     return () => {
       clearTimeout(timer);
     };
-    // 의존성 배열에 상태변수를 넣어주면 그 상태변수가 변경될 때 마다 useEffect가 다시 호출된다.
-  }, [enteredPw]);
+    // 의존성 배열에 상태변수를 넣어주면 그 상태변수가 변경될 때마다 useEffect가 재실행됨.
+  }, [emailState.value, pwState.value, emailState.isValid, pwState.isValid]);
 
   // 이메일이 변경될 때마다 실행할 핸들러
   const emailChangeHandler = (e) => {
     // reducer의 상태 변경은 dispatch 함수를 통해서 처리
     // dispatch함수의 매개값 객체의 key는 정해진 것이 아닌, reducer 함수에서 구분하기 위해 붙여주는 이름.
     // 프로퍼티의 key와 value는 자유롭게 줄 수 있습니다. (정해진 게 아님!)
-    dispatchEmail({
-      type: 'USER_INPUT',
+    dispatchForm({
+      type: 'EMAIL_INPUT',
       val: e.target.value,
     });
   };
 
-  // 비밀번호가 변경될때 마다 실행할 핸들러
+  // 비밀번호가 변경될 때마다 실행할 핸들러
   const passwordChangeHandler = (e) => {
-    setEnteredPw(e.target.value);
-
-    // setFormIsValid(
-    //   e.target.value.trim().length > 6 && enteredEmail.includes('@'),
-    // );
+    dispatchForm({
+      type: 'PW_INPUT',
+      val: e.target.value,
+    });
   };
 
   const validateEmailHandler = () => {
-    // setEmailIsValid(enteredEmail.includes('@'));
+    dispatchForm({ type: 'VALIDATE_EMAIL' });
   };
 
   const validatePasswordHandler = () => {
-    setPwIsValid(enteredPw.trim().length > 6);
+    dispatchForm({ type: 'VALIDATE_PW' });
   };
 
   const submitHandler = (e) => {
     e.preventDefault();
-    console.log('submit 동작함!');
-    // onLogin(enteredEmail, enteredPw);
+    onLogin(emailState.value, pwState.value);
   };
+
+  console.log('최신의 상태: ', formState);
 
   return (
     <Card className={styles.login}>
       <form onSubmit={submitHandler}>
         <div
-          className={`${styles.control} ${!emailIsValid ? styles.invalid : ''}`}
+          className={`${styles.control} ${!emailState.isValid ? styles.invalid : ''}`}
         >
           <label htmlFor='email'>E-Mail</label>
           <input
             type='email'
             id='email'
-            // value={enteredEmail}
+            value={emailState.value}
             onChange={emailChangeHandler}
-            onBlur={validateEmailHandler} // blur는 focus의 반대. 즉, focus가 빠지면.의미
+            onBlur={validateEmailHandler} // blur는 focus의 반대.
           />
         </div>
         <div
-          className={`${styles.control} ${!pwIsValid ? styles.invalid : ''} `}
+          className={`${styles.control} ${!pwState.isValid ? styles.invalid : ''}`}
         >
           <label htmlFor='password'>Password</label>
           <input
             type='password'
             id='password'
-            value={enteredPw}
+            value={pwState.value}
             onChange={passwordChangeHandler}
             onBlur={validatePasswordHandler}
           />
@@ -142,7 +145,7 @@ const Login = ({ onLogin }) => {
           <ButtonComponent
             type='submit'
             className={styles.btn}
-            disabled={!formIsValid} // button은 disabled를 통해 비활성화 기능 구현, true면 비활성, false면 활성
+            disabled={!formState.formIsValid}
           >
             Login
           </ButtonComponent>
